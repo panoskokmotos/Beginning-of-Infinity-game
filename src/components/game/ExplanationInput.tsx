@@ -1,6 +1,7 @@
 'use client';
 
 import { GamePhase } from '@/types/game';
+import { formatTime } from '@/lib/useTimer';
 
 interface Props {
   phase: GamePhase;
@@ -9,6 +10,8 @@ interface Props {
   onChange: (v: string) => void;
   onSubmit: () => void;
   disabled: boolean;
+  timerSecondsLeft?: number | null;
+  timerDuration?: number;
 }
 
 const PLACEHOLDERS: Record<number, string> = {
@@ -25,6 +28,13 @@ const BUTTON_LABELS: Record<number, string> = {
   4: 'Submit Final Explanation',
 };
 
+function timerColor(left: number, total: number): string {
+  const frac = left / total;
+  if (frac > 0.5) return 'text-zinc-400';
+  if (frac > 0.25) return 'text-amber-400';
+  return 'text-red-400';
+}
+
 export default function ExplanationInput({
   phase,
   round,
@@ -32,10 +42,16 @@ export default function ExplanationInput({
   onChange,
   onSubmit,
   disabled,
+  timerSecondsLeft,
+  timerDuration,
 }: Props) {
   const isStreaming = phase === 'challenging' || phase === 'scoring';
   const overLimit = value.length > 1000;
   const nearLimit = value.length > 800;
+  const showTimer =
+    timerSecondsLeft != null &&
+    timerSecondsLeft > 0 &&
+    !isStreaming;
 
   const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && !disabled && value.trim()) {
@@ -49,14 +65,18 @@ export default function ExplanationInput({
         <textarea
           className="w-full bg-zinc-900 border border-zinc-700 focus:border-amber-500/50 focus:outline-none rounded-lg px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 resize-none transition-colors font-mono leading-relaxed disabled:opacity-40"
           rows={4}
-          placeholder={isStreaming ? 'Waiting for The Crucible...' : PLACEHOLDERS[round] ?? PLACEHOLDERS[4]}
+          placeholder={
+            isStreaming
+              ? 'Waiting for The Crucible...'
+              : PLACEHOLDERS[round] ?? PLACEHOLDERS[4]
+          }
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKey}
           disabled={disabled}
         />
         <div className="flex items-center justify-between mt-2">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <span
               className={[
                 'text-xs font-mono transition-colors',
@@ -69,9 +89,17 @@ export default function ExplanationInput({
             >
               {value.length}/1000
             </span>
-            <span className="text-xs text-zinc-600 font-mono">
-              ⌘↵ to submit
-            </span>
+            <span className="text-xs text-zinc-600 font-mono">⌘↵ to submit</span>
+            {showTimer && timerDuration && (
+              <span
+                className={[
+                  'text-xs font-mono font-semibold tabular-nums transition-colors',
+                  timerColor(timerSecondsLeft!, timerDuration),
+                ].join(' ')}
+              >
+                ⏱ {formatTime(timerSecondsLeft!)}
+              </span>
+            )}
           </div>
           <button
             onClick={onSubmit}

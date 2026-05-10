@@ -10,6 +10,10 @@ export type MessageRole = 'player' | 'ai';
 
 export type Thinker = 'deutsch' | 'naval' | 'popper';
 
+export type Difficulty = 'novice' | 'adept' | 'master';
+
+export type GameMode = 'practice' | 'survival';
+
 export interface Message {
   id: string;
   role: MessageRole;
@@ -34,6 +38,7 @@ export interface Phenomenon {
   naiveTraps: string[];
   reachOpportunities: string[];
   thinker: Thinker;
+  difficulty: Difficulty;
 }
 
 export interface GameState {
@@ -65,6 +70,7 @@ export type GameAction =
   | { type: 'START_GAME'; phenomenon: Phenomenon }
   | { type: 'SET_INPUT'; value: string }
   | { type: 'SUBMIT_EXPLANATION' }
+  | { type: 'FORCE_SUBMIT'; content: string }
   | { type: 'STREAM_DELTA'; content: string }
   | { type: 'STREAM_COMPLETE'; finalContent: string }
   | { type: 'SCORE_RECEIVED'; score: Score }

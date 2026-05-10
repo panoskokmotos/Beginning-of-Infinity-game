@@ -55,6 +55,28 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case 'FORCE_SUBMIT': {
+      const playerMessage: Message = {
+        id: makeId(),
+        role: 'player',
+        content: action.content,
+        round: state.currentRound,
+      };
+      const nextPh: GamePhase =
+        state.phase === 'explaining'
+          ? 'challenging'
+          : state.currentRound === 4
+          ? 'scoring'
+          : 'challenging';
+      return {
+        ...state,
+        phase: nextPh,
+        messages: [...state.messages, playerMessage],
+        currentInput: '',
+        streamingContent: '',
+      };
+    }
+
     case 'STREAM_DELTA':
       return {
         ...state,
