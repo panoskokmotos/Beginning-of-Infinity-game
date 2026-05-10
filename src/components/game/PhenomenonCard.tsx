@@ -1,6 +1,7 @@
 'use client';
 
 import { Phenomenon } from '@/types/game';
+import { THINKER_PROFILES } from '@/lib/thinkers';
 
 interface Props {
   phenomenon: Phenomenon;
@@ -8,12 +9,18 @@ interface Props {
 }
 
 export default function PhenomenonCard({ phenomenon, compact }: Props) {
+  const profile = THINKER_PROFILES[phenomenon.thinker];
+
   return (
-    <div className="border border-amber-500/40 bg-zinc-900 rounded-xl p-5 shadow-lg shadow-amber-900/10">
+    <div
+      className={`border ${profile.borderColor} bg-zinc-900 rounded-xl p-5 shadow-lg`}
+    >
       <div className="flex items-start gap-3">
-        <span className="text-amber-400 text-xl mt-0.5">◈</span>
+        <span className={`text-xl mt-0.5 ${profile.accentColor}`}>
+          {profile.symbol}
+        </span>
         <div>
-          <p className="text-xs uppercase tracking-widest text-amber-500/70 font-mono mb-2">
+          <p className={`text-xs uppercase tracking-widest font-mono mb-2 ${profile.accentColor} opacity-70`}>
             Phenomenon
           </p>
           <h2 className="text-xl font-serif text-zinc-100 leading-snug mb-3">

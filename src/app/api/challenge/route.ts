@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { CRUCIBLE_SYSTEM_PROMPT, buildUserMessage } from '@/lib/prompts';
 import { ChallengeRequest, Score } from '@/types/game';
 
+export const maxDuration = 60;
+
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });

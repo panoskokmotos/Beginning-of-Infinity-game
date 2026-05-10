@@ -8,6 +8,8 @@ export type GamePhase =
 
 export type MessageRole = 'player' | 'ai';
 
+export type Thinker = 'deutsch' | 'naval' | 'popper';
+
 export interface Message {
   id: string;
   role: MessageRole;
@@ -31,6 +33,7 @@ export interface Phenomenon {
   seedFacts: string[];
   naiveTraps: string[];
   reachOpportunities: string[];
+  thinker: Thinker;
 }
 
 export interface GameState {
