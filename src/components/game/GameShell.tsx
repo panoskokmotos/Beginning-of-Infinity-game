@@ -1,6 +1,7 @@
 'use client';
 
 import { useReducer, useCallback, useState, useEffect, useRef } from 'react';
+import { useUser } from '@clerk/nextjs';
 import { gameReducer, initialState } from '@/lib/gameReducer';
 import { PHENOMENA, getRandomPhenomenon, getUnlockedPhenomena } from '@/lib/phenomena';
 import { THINKER_PROFILES, THINKERS_ORDER } from '@/lib/thinkers';
@@ -36,6 +37,7 @@ import RoundIndicator from './RoundIndicator';
 import ConversationThread from './ConversationThread';
 import ExplanationInput from './ExplanationInput';
 import ScorePanel from './ScorePanel';
+import { AuthBar } from '@/components/auth/AuthBar';
 
 // ── Filter tabs ───────────────────────────────────────────────────────────────
 
@@ -69,6 +71,8 @@ function filterPhenomena(
 // ── Component ────────────────────────────────────────────────────────────────
 
 export default function GameShell() {
+  const { isSignedIn } = useUser();
+
   const [state, dispatch] = useReducer(
     gameReducer,
     getRandomPhenomenon(),
@@ -236,6 +240,32 @@ export default function GameShell() {
         setTotalPlayers(total);
       })
       .catch(() => {});
+
+    // Save session to DB (silently — 401 if not signed in)
+    const playerMessages = state.messages.filter((m) => m.role === 'player');
+    const initialExplanation = playerMessages[0]?.content ?? null;
+    const finalExplanation = playerMessages[playerMessages.length - 1]?.content ?? null;
+    fetch('/api/user/sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phenomenonId: id,
+        phenomenonTitle: state.phenomenon.title,
+        difficulty,
+        thinker: state.phenomenon.thinker,
+        mode,
+        reach: state.score.reach,
+        falsifiability: state.score.falsifiability,
+        resilience: state.score.resilience,
+        avgScore: avg,
+        verdict: state.score.verdict,
+        bestMoment: state.score.bestMoment,
+        growthEdge: state.score.growthEdge,
+        initialExplanation,
+        finalExplanation,
+        survivalStreak: survivalStreakRef.current,
+      }),
+    }).catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.phase]);
 
@@ -323,12 +353,15 @@ export default function GameShell() {
                 challenge. Watch it break — or become something real.
               </p>
             </div>
-            {bestStreak > 0 && (
-              <div className="text-right">
-                <p className="text-xs font-mono text-zinc-600 uppercase tracking-widest mb-1">Best Streak</p>
-                <p className="text-3xl font-serif text-amber-400">{bestStreak}</p>
-              </div>
-            )}
+            <div className="flex items-center gap-6">
+              {bestStreak > 0 && (
+                <div className="text-right">
+                  <p className="text-xs font-mono text-zinc-600 uppercase tracking-widest mb-1">Best Streak</p>
+                  <p className="text-3xl font-serif text-amber-400">{bestStreak}</p>
+                </div>
+              )}
+              <AuthBar />
+            </div>
           </div>
         </div>
 
@@ -636,6 +669,7 @@ export default function GameShell() {
             >
               ↻ Menu
             </button>
+            <AuthBar />
           </div>
         </div>
       </div>
